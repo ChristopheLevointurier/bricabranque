@@ -19,6 +19,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -38,8 +39,10 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
         new TestCollisionPolygons();
     }
     private JButton swich = new JButton("...");
+    private JButton stat = new JButton("...");
     private JRadioButton un = new JRadioButton("Externe", true);
     private JRadioButton deux = new JRadioButton("Interne", false);
+    private static JCheckBox strict = new JCheckBox("Strictement", false);
     private JButton reset = new JButton("Reset");
     private Zone z;
     public ArrayList<Point> outPolygon = new ArrayList<>();
@@ -57,12 +60,20 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
         but.setLayout(new BoxLayout(but, BoxLayout.X_AXIS));
         but.add(un);
         but.add(deux);
+        but.add(strict);
         but.add(reset);
 
 
         this.getContentPane().add(but, BorderLayout.SOUTH);
         this.getContentPane().add(z, BorderLayout.CENTER);
-        this.getContentPane().add(swich, BorderLayout.NORTH);
+
+
+        JPanel bp = new JPanel();
+        bp.setLayout(new BoxLayout(bp, BoxLayout.X_AXIS));
+        bp.add(swich);
+        bp.add(stat);
+
+        this.getContentPane().add(bp, BorderLayout.NORTH);
         z.addMouseListener(this);
         z.addMouseMotionListener(this);
         pack();
@@ -101,7 +112,7 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
     }
 
     public void test(int x, int y) {
-        if (pointInPolygon(outPolygon, new Point(x, y))) {
+        if (pointInsidePolygon(outPolygon, new Point(x, y))) {
             swich.setText("souris dedans");
             swich.setBackground(Color.green);
         } else {
@@ -110,7 +121,7 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
         }
     }
 
-    private static boolean pointInPolygon(ArrayList<Point> p, Point mp) {
+    private static boolean pointInsidePolygon(ArrayList<Point> p, Point mp) {
         //Polygon.contains(point)
         boolean inPoly = false;
         int j = p.size() - 1;
@@ -131,6 +142,21 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
     }
 
     /**
+     * test si un point c est sur une droite ab
+     */
+    private static boolean intersectionPtLine(Point pa, Point pb, Point pc) {
+
+        if (pa.x == pb.x && pa.x == pc.x && ((pc.y < pa.y && pc.y > pb.y) || (pc.y > pa.y && pc.y < pb.y))) {
+            return true;
+        }
+        if (pa.y == pb.y && pa.y == pc.y && ((pc.x < pa.x && pc.x > pb.x) || (pc.x > pa.x && pc.x < pb.x))) {
+            return true;
+        }
+        //ajout droite pentues
+        return false;
+    }
+
+    /**
      *
      * test si le point est dans le polygone
      *
@@ -140,6 +166,17 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
             if (equalPoint(p.get(i), mp)) {
                 return true;
             }
+        }
+        //test si le point coupe une droite
+        Point temp = p.get(0);
+        for (Point pt : p) {
+            if (intersectionPtLine(temp, pt, mp)) {
+                return true;
+            }
+            temp = pt;
+        }
+        if (intersectionPtLine(temp, p.get(0), mp)) {
+            return true;
         }
         return false;
     }
@@ -161,11 +198,15 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
             Point p = new Point((int) Math.round(p_in.get(i).getX()), (int) Math.round(p_in.get(i).getY()));
             if (!contains(p_out, p)) {
                 filtrPolyIn.add(p);
+            } else {
+                if (strict.isSelected()) {
+                    return false;
+                }
             }
         }
 
         for (Point p : filtrPolyIn) {
-            if (!pointInPolygon(p_out, p)) {
+            if (!pointInsidePolygon(p_out, p)) {
                 System.out.println("polygonInPolygon fail points internes:p=" + p);
                 System.out.println("tableau=" + p_out);
                 return false;
@@ -176,11 +217,15 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
             Point p = new Point((int) Math.round(p_out.get(i).getX()), (int) Math.round(p_out.get(i).getY()));
             if (!contains(p_in, p)) {
                 filtrPolyOut.add(p);
+            } else {
+                if (strict.isSelected()) {
+                    return false;
+                }
             }
         }
 
         for (Point p : filtrPolyOut) {
-            if (pointInPolygon(p_in, p)) {
+            if (pointInsidePolygon(p_in, p)) {
                 System.out.println("polygonInPolygon fail points externes:p=" + p);
                 System.out.println("tableau=" + p_in);
                 return false;
@@ -243,6 +288,7 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        stat.setText("x=" + e.getX() + " y=" + e.getY());
         if (e.isControlDown()) {
             test(e.getX(), e.getY());
         }
