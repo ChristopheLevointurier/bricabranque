@@ -152,7 +152,7 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
         if (pa.y == pb.y && pa.y == pc.y && ((pc.x < pa.x && pc.x > pb.x) || (pc.x > pa.x && pc.x < pb.x))) {
             return true;
         }
-        //ajout droite pentues
+        //droite pentues non prises en compte
         return false;
     }
 
