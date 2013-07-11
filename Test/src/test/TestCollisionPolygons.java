@@ -9,9 +9,11 @@ import java.awt.Color;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -64,8 +66,16 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
         but.add(reset);
 
 
-        this.getContentPane().add(but, BorderLayout.SOUTH);
-        this.getContentPane().add(z, BorderLayout.CENTER);
+        setUndecorated(true);
+        setLocationRelativeTo(null);
+        // addMouseListener(new MouseAdapter() {
+        //    @Override
+        //    public void mouseClicked(MouseEvent e) {
+        //        dispose();            }        });
+
+
+        getContentPane().add(but, BorderLayout.SOUTH);
+        getContentPane().add(z, BorderLayout.CENTER);
 
 
         JPanel bp = new JPanel();
@@ -73,10 +83,12 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
         bp.add(swich);
         bp.add(stat);
 
-        this.getContentPane().add(bp, BorderLayout.NORTH);
+        getContentPane().add(bp, BorderLayout.NORTH);
+        pack();
+        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 64, 64));
+        setOpacity(0.90f);
         z.addMouseListener(this);
         z.addMouseMotionListener(this);
-        pack();
         setVisible(true);
 
         Action quitActionListener = new AbstractAction() {
@@ -99,6 +111,9 @@ public class TestCollisionPolygons extends JFrame implements MouseListener, Mous
                 repaint();
             }
         });
+
+
+
     }
 
     public void testPolygon() {
